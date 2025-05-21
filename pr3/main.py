@@ -6,22 +6,18 @@ from collections import defaultdict
 
 class NaiveBayesSpamClassifier:
     def __init__(self, alpha=1.0):
-        self.alpha = alpha  # Сглаживание Лапласа
-        self.class_probs = {}  # Вероятности классов P(c)
-        self.word_probs = {}  # Условные вероятности P(w|c)
-        self.vocab = set()  # Словарь уникальных слов
+        self.alpha = alpha
+        self.class_probs = {}
+        self.word_probs = {}
+        self.vocab = set()
 
     def clean_text(self, text):
-        """Очистка текста и токенизация"""
         text = text.lower()
-        # Удаляем пунктуацию (можно добавить другие символы)
         for ch in "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~":
             text = text.replace(ch, ' ')
         return text.split()
 
     def train(self, texts, labels):
-        """Обучение модели"""
-        # Считаем частоты слов и классов
         class_counts = defaultdict(int)
         word_counts = defaultdict(lambda: defaultdict(int))
         total_words_per_class = defaultdict(int)
@@ -34,12 +30,10 @@ class NaiveBayesSpamClassifier:
                 total_words_per_class[label] += 1
                 self.vocab.add(word)
 
-        # Рассчитываем P(c)
         total_docs = sum(class_counts.values())
         for label in class_counts:
             self.class_probs[label] = class_counts[label] / total_docs
 
-        # Рассчитываем P(w|c) с сглаживанием
         vocab_size = len(self.vocab)
         for label in class_counts:
             self.word_probs[label] = {}
@@ -49,7 +43,6 @@ class NaiveBayesSpamClassifier:
                 self.word_probs[label][word] = (count + self.alpha) / denominator
 
     def predict(self, text):
-        """Предсказание класса для текста"""
         words = self.clean_text(text)
         max_log_prob = -float('inf')
         best_class = None
@@ -68,13 +61,11 @@ class NaiveBayesSpamClassifier:
 
 
 def load_dataset(filename, test_ratio=0.2, encoding='windows-1251'):
-    """Загрузка данных из CSV с указанной кодировкой"""
     with open(filename, 'r', encoding=encoding) as f:
         reader = csv.reader(f)
-        next(reader)  # Пропускаем заголовок
+        next(reader)
         data = [(row[0], row[1]) for row in reader if len(row) >= 2]
 
-    # Разделение на обучающую и тестовую выборки
     random.shuffle(data)
     split_idx = int(len(data) * (1 - test_ratio))
     train = data[:split_idx]
@@ -89,7 +80,6 @@ def load_dataset(filename, test_ratio=0.2, encoding='windows-1251'):
 
 
 def evaluate_model(classifier, X_test, y_test):
-    """Оценка точности модели"""
     correct = 0
     for text, true_label in zip(X_test, y_test):
         pred = classifier.predict(text)
@@ -99,17 +89,14 @@ def evaluate_model(classifier, X_test, y_test):
 
 
 if __name__ == "__main__":
-    # Загрузка данных с указанием кодировки
     try:
         X_train, y_train, X_test, y_test = load_dataset('spamdb.csv', encoding='windows-1251')
     except FileNotFoundError:
         print("Ошибка: файл 'sms_spam.csv' не найден!")
         exit()
 
-    # Создание и обучение модели
     nb_classifier = NaiveBayesSpamClassifier(alpha=1.0)
     nb_classifier.train(X_train, y_train)
 
-    # Оценка качества
     accuracy = evaluate_model(nb_classifier, X_test, y_test)
     print(f"Точность модели: {accuracy:.1%}")

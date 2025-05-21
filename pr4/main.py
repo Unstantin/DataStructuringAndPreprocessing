@@ -1,9 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Параметры задачи
-dim = 2                  # Размерность (можно изменить на n)
-bounds = np.array([[-2, 2], [-2, 2]])  # Границы поиска (x_i ∈ [-2, 2])
+
+dim = 2                  # Размерность
+bounds = np.array([[-2, 2], [-2, 2]])  # Границы поиска
 n_saplings = 50          # Число саженцев
 max_iter = 200           # Число итераций
 epsilon = 0.1            # Порог близости для прививки
@@ -53,7 +53,6 @@ def ssg_rosenbrock():
     history = []
 
     for iteration in range(max_iter):
-        # Применяем операторы
         for i in range(n_saplings):
             j = np.random.randint(0, n_saplings)
             if i != j:
@@ -64,7 +63,6 @@ def ssg_rosenbrock():
             if i != j:
                 population[i], population[j] = vaccinate(population[i], population[j])
 
-        # Отбор лучших
         fitness = np.array([rosenbrock(x) for x in population])
         best_idx = np.argmin(fitness)
         if fitness[best_idx] < best_fitness:
